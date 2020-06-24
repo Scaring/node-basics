@@ -1,27 +1,34 @@
 // contacts.js
-const fs = require("fs").promises;
-const path = require("path");
+const fs = require('fs').promises;
+const path = require('path');
 
-const contactsPath = path.resolve("./db/contacts.json");
-
-module.exports = contactsPath;
+const contactsPath = path.format({
+  root: 'D:/code/node-basics/db',
+  base: '/contacts.json',
+  ext: 'ignored',
+});
 
 // TODO: задокументировать каждую функцию
-async function listContacts() {
-  const listContacts = await fs.readFile(contactsPath);
-  return JSON.parse(listContacts);
-}
+const getListContacts = async () => {
+  const list = await fs.readFile(contactsPath, 'utf-8');
+  return JSON.parse(list);
+};
 
-function getContactById(contactId) {
-  // ...твой код
-}
+const getContactById = async contactId => {
+  const contacts = await getListContacts();
+  const searchedContact = await contacts.find(contact => {
+    if (contact.id === contactId) return contact;
+  });
+  return searchedContact;
+};
 
-function removeContact(contactId) {
-  // ...твой код
-}
+// function removeContact(contactId) {
+//   // ...твой код
+// }
 
-function addContact(name, email, phone) {
-  // ...твой код
-}
+// function addContact(name, email, phone) {
+//   // ...твой код
+// }
 
-module.exports = listContacts;
+module.exports = getListContacts;
+// module.exports = getContactById;
