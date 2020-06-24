@@ -1,0 +1,24 @@
+{
+  "name": "basics",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Scaring/node-basics.git"
+  },
+  "author": "Dmytro Kuschevyy",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Scaring/node-basics/issues"
+  },
+  "homepage": "https://github.com/Scaring/node-basics#readme",
+  "devDependencies": {
+    "nodemon": "^2.0.4"
+  }
+}
