@@ -20,5 +20,8 @@
   "homepage": "https://github.com/Scaring/node-basics#readme",
   "devDependencies": {
     "nodemon": "^2.0.4"
+  },
+  "dependencies": {
+    "yargs": "^15.3.1"
   }
 }

@@ -1,34 +1,40 @@
-// contacts.js
-const fs = require('fs').promises;
+const fs = require('fs');
 const path = require('path');
+const rootPath = __dirname;
 
-const contactsPath = path.format({
-  root: 'D:/code/node-basics/db',
-  base: '/contacts.json',
-  ext: 'ignored',
-});
+const contactsPath = path.join(rootPath, '/db', '/contacts.json');
 
-// TODO: задокументировать каждую функцию
-const getListContacts = async () => {
-  const list = await fs.readFile(contactsPath, 'utf-8');
+function listContacts() {
+  const list = fs.readFileSync(contactsPath, 'utf-8');
   return JSON.parse(list);
-};
+}
 
-const getContactById = async contactId => {
-  const contacts = await getListContacts();
-  const searchedContact = await contacts.find(contact => {
-    if (contact.id === contactId) return contact;
-  });
+function getContactById(contactId) {
+  const contacts = listContacts();
+  const searchedContact = contacts.find(contact => contact.id === contactId);
   return searchedContact;
-};
+}
 
-// function removeContact(contactId) {
-//   // ...твой код
-// }
+function removeContact(contactId) {
+  const contacts = listContacts();
+  const deletedContact = getContactById(contactId);
+  const filteredContacts = contacts.filter(contact => contact.id !== contactId);
+  fs.writeFileSync(contactsPath, JSON.stringify(filteredContacts));
+  return deletedContact;
+}
 
-// function addContact(name, email, phone) {
-//   // ...твой код
-// }
+function addContact(name, email, phone) {
+  const contacts = listContacts();
+  const lastContact = contacts[contacts.length - 1];
+  const addContact = {
+    id: lastContact.id + 1,
+    name: name,
+    email: email,
+    phone: phone,
+  };
+  const updatedContacts = [...contacts, addContact];
+  fs.writeFileSync(contactsPath, JSON.stringify(updatedContacts));
+  return addContact;
+}
 
-module.exports = getListContacts;
-// module.exports = getContactById;
+module.exports = { listContacts, getContactById, removeContact, addContact };

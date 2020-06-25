@@ -1,18 +1,35 @@
-const process = require('process');
+const contacts = require('./contacts');
+const argv = require('yargs').argv;
 
-const getListContacts = require('./contacts');
-// const getContactById = require('./contacts');
+function invokeAction({ action, id, name, email, phone }) {
+  switch (action) {
+    case 'list':
+      console.log('Contacts list:');
+      console.table(contacts.listContacts());
+      break;
 
-const list = async () => {
-  const list = await getListContacts();
-  console.table(list);
-};
+    case 'get':
+      console.log('Searched contact:');
+      console.log(contacts.getContactById(id));
+      break;
 
-// const searchedId = Number(process.argv[3].split('=')[1]);
-// const get = async id => {
-//   const contact = await getContactById(id);
-//   console.log(contact);
-// };
+    case 'add':
+      console.log('Added contact:');
+      console.log(contacts.addContact(name, email, phone));
+      console.log('Contacts list:');
+      console.table(contacts.listContacts());
+      break;
 
-list();
-// get(searchedId);
+    case 'remove':
+      console.log('Deleted contact:');
+      console.log(contacts.removeContact(id));
+      console.log('Contacts list:');
+      console.table(contacts.listContacts());
+      break;
+
+    default:
+      console.warn('\x1B[31m Unknown action type!');
+  }
+}
+
+invokeAction(argv);
