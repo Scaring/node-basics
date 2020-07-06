@@ -7,7 +7,7 @@ const contactsPath = path.join(rootPath, '/db', '/contacts.json');
 //Function returns array of objects from contacts.json
 const listContacts = async () => {
   const list = await fs.readFile(contactsPath, 'utf-8');
-  return JSON.parse(list);
+  return list;
 };
 
 //Function returns object of exect contact searched by id in contacts.json
