@@ -1,43 +1,12 @@
-const contacts = require('./contacts');
-const argv = require('yargs').argv;
+const express = require('express');
+const cors = require('cors');
+const contactsRouter = require('./db/contactRouter');
 
-async function invokeAction({ action, id, name, email, phone }) {
-  switch (action) {
-    case 'list':
-      const list = await contacts.listContacts();
-      console.log('Contacts list:');
-      console.table(list);
-      break;
+const app = express();
 
-    case 'get':
-      const searchedContact = await contacts.getContactById(id);
-      console.log('Searched contact:');
-      console.log(searchedContact);
-      break;
+app.use(cors());
+app.use(express.json());
 
-    case 'add':
-      const addedContact = await contacts.addContact(name, email, phone);
-      const listWithAddedContact = await contacts.listContacts();
+app.use('/', contactsRouter);
 
-      console.log('Added contact:');
-      console.log(addedContact);
-      console.log('Contacts list:');
-      console.table(listWithAddedContact);
-      break;
-
-    case 'remove':
-      const removedContact = await contacts.removeContact(id);
-      const listWithoutRemovedContact = await contacts.listContacts();
-
-      console.log('Deleted contact:');
-      console.log(removedContact);
-      console.log('Contacts list:');
-      console.table(listWithoutRemovedContact);
-      break;
-
-    default:
-      console.warn('\x1B[31m Unknown action type!');
-  }
-}
-
-invokeAction(argv);
+app.listen(3000, () => console.log('Server is listening on port: 3000'));
