@@ -1,7 +1,15 @@
 const { Router } = require('express');
+const mongoose = require('mongoose');
+
 const contacts = require('./contacts');
+const { validateCreateUserMiddleware } = require('./contact.validator');
 
 const contactsRouter = Router();
+
+mongoose.connect(
+  'mongodb+srv://admin:1q2w3e4r5t@rn-11.lniqv.mongodb.net/db-contacts?retryWrites=true&w=majority',
+  { useNewUrlParser: true, useUnifiedTopology: true },
+);
 
 contactsRouter.get('/contacts/', async (req, res) => {
   try {
@@ -29,23 +37,27 @@ contactsRouter.get('/contacts/:contactId', async (req, res) => {
   }
 });
 
-contactsRouter.post('/contacts/', async (req, res) => {
-  try {
-    const { name, email, phone } = req.body;
+contactsRouter.post(
+  '/contacts/',
+  validateCreateUserMiddleware,
+  async (req, res) => {
+    try {
+      const { name, email, phone } = req.body;
 
-    if (!name || !email || !phone) {
-      res.status(404).send({ message: 'missing required name field' });
-      return;
+      if (!name || !email || !phone) {
+        res.status(404).send({ message: 'missing required field' });
+        return;
+      }
+
+      const adddedContact = await contacts.addContact(name, email, phone);
+      res.status(201).send(adddedContact);
+    } catch (e) {
+      console.log(e);
+    } finally {
+      res.end();
     }
-
-    const adddedContact = await contacts.addContact(name, email, phone);
-    res.status(201).send(adddedContact);
-  } catch (e) {
-    console.log(e);
-  } finally {
-    res.end();
-  }
-});
+  },
+);
 
 contactsRouter.delete('/contacts/:contactId', async (req, res) => {
   try {
