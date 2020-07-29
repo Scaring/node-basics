@@ -1,15 +1,9 @@
 const { Router } = require('express');
-const mongoose = require('mongoose');
 
 const contacts = require('./contacts');
 const { validateCreateUserMiddleware } = require('./contact.validator');
 
 const contactsRouter = Router();
-
-mongoose.connect(
-  'mongodb+srv://admin:1q2w3e4r5t@rn-11.lniqv.mongodb.net/db-contacts?retryWrites=true&w=majority',
-  { useNewUrlParser: true, useUnifiedTopology: true },
-);
 
 contactsRouter.get('/contacts/', async (req, res) => {
   try {
