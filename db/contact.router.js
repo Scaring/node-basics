@@ -99,4 +99,4 @@ contactsRouter.patch(
   },
 );
 
-module.exports = contactsRouter;
+module.exports = { contactsRouter };
