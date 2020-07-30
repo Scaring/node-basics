@@ -1,12 +1,31 @@
-const express = require('express');
+require('dotenv').config();
 const cors = require('cors');
-const contactsRouter = require('./db/contactRouter');
-
+const express = require('express');
+const contactsRouter = require('./db/contact.router');
+const mongoose = require('mongoose');
 const app = express();
 
-app.use(cors());
-app.use(express.json());
+const createServer = async () => {
+  try {
+    await mongoose.connect(process.env.MONGODB_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      useFindAndModify: false,
+    });
 
-app.use('/', contactsRouter);
+    console.log('Database connection successful');
 
-app.listen(3000, () => console.log('Server is listening on port: 3000'));
+    app.use(cors());
+
+    app.use(express.json());
+
+    app.use('/', contactsRouter);
+
+    app.listen(3000, () => console.log('Server is listening on port: 3000'));
+  } catch (e) {
+    console.log(e);
+    process.exit(1);
+  }
+};
+
+createServer();
