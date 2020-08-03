@@ -11,9 +11,10 @@ contactsRouter.get('/contacts/', async (req, res) => {
   try {
     const list = await Contact.getContacts();
     res.json(list);
-    res.end();
   } catch (e) {
     console.log(e);
+  } finally {
+    res.end();
   }
 });
 

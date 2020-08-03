@@ -3,7 +3,10 @@ const mongoose = require('mongoose');
 const contactSchema = new mongoose.Schema({
   name: String,
   phone: String,
-  email: String,
+  email: {
+    type: String,
+    unique: true,
+  },
   password: String,
   subscription: {
     type: String,
@@ -20,6 +23,10 @@ class Contact {
 
   getContacts = async () => {
     return this.contact.find();
+  };
+
+  getContactWithQuery = async (query = {}) => {
+    return await this.contact.find(query);
   };
 
   getContactById = async id => {
