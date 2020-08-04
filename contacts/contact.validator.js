@@ -1,4 +1,8 @@
 const Joi = require('@hapi/joi');
+const {
+  allowedEmails,
+  passwordPattern,
+} = require('../validationPatterns/validationPatterns');
 
 const CreateUserSchema = Joi.object({
   name: Joi.string(),
@@ -8,17 +12,21 @@ const CreateUserSchema = Joi.object({
   email: Joi.string()
     .email({
       minDomainSegments: 2,
-      tlds: { allow: ['com', 'net', 'ua'] },
+      tlds: { allow: allowedEmails },
     })
     .required(),
 
-  password: Joi.string().pattern(new RegExp('^[a-zA-Z0-9]{3,30}$')).required(),
+  password: Joi.string().pattern(passwordPattern).required(),
 });
 
 const UpdateUserSchema = Joi.object({
+  name: Joi.string(),
+
+  phone: Joi.string(),
+
   email: Joi.string().email({
     minDomainSegments: 2,
-    tlds: { allow: ['com', 'net', 'ua'] },
+    tlds: { allow: allowedEmails },
   }),
 });
 
@@ -33,6 +41,7 @@ const validateCreateUserMiddleware = async (req, res, next) => {
     res.end();
     return;
   }
+
   next();
 };
 
@@ -47,6 +56,7 @@ const validateUpdateUserMiddleware = async (req, res, next) => {
     res.end();
     return;
   }
+
   next();
 };
 
