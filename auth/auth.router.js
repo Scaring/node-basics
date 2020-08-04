@@ -6,6 +6,7 @@ const {
   validateCreateUserMiddleware,
 } = require('../contacts/contact.validator');
 const { validateLoginUserMiddleware } = require('./auth.validation');
+const authMiddleware = require('../middlewares/auth.middleware');
 
 const authRouter = Router();
 
@@ -62,8 +63,12 @@ authRouter.post('/login', validateLoginUserMiddleware, async (req, res) => {
       { expiresIn: '1d' },
     );
 
-    res.json({
+    await Contact.updateContactById(currentContact[0]._id, {
       token: accessToken,
+    });
+
+    res.json({
+      token: `Bearer ${accessToken}`,
       user: {
         email: currentContact[0].email,
         subscription: currentContact[0].subscription,
@@ -71,6 +76,28 @@ authRouter.post('/login', validateLoginUserMiddleware, async (req, res) => {
     });
   } catch (e) {
     res.status(500).send(e);
+  } finally {
+    res.end();
+  }
+});
+
+authRouter.post('/logout', authMiddleware, async (req, res) => {
+  try {
+    const searchedContact = await req.current;
+    if (!searchedContact) {
+      res.status(401).send({
+        message: 'Not authorized',
+      });
+      return;
+    }
+
+    await Contact.updateContactById(searchedContact._id, {
+      token: '',
+    });
+
+    res.status(204);
+  } catch (e) {
+    console.log(e);
   } finally {
     res.end();
   }

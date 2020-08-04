@@ -22,7 +22,7 @@ const createServer = async () => {
 
     app.use(express.json());
 
-    app.use('/', contactsRouter);
+    app.use('/contacts', contactsRouter);
     app.use('/auth', authRouter);
 
     app.listen(3000, () => emmiter.emit('serverStart'));
