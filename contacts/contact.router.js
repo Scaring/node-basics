@@ -5,6 +5,7 @@ const {
   validateCreateUserMiddleware,
   validateUpdateUserMiddleware,
 } = require('./contact.validator');
+const { avatarUploader } = require('../middlewares/avatarUploader.middleware');
 
 const contactsRouter = Router();
 
@@ -120,6 +121,16 @@ contactsRouter.patch(
     } finally {
       res.end();
     }
+  },
+);
+
+contactsRouter.post(
+  '/uploadAvatar',
+  authMiddleware,
+  avatarUploader,
+  async (req, res) => {
+    console.log(req.file);
+    res.end();
   },
 );
 
