@@ -1,5 +1,6 @@
 const { Router } = require('express');
 const Contact = require('./contact.model');
+const authMiddleware = require('../middlewares/auth.middleware');
 const {
   validateCreateUserMiddleware,
   validateUpdateUserMiddleware,
@@ -7,17 +8,18 @@ const {
 
 const contactsRouter = Router();
 
-contactsRouter.get('/contacts/', async (req, res) => {
+contactsRouter.get('/', authMiddleware, async (req, res) => {
   try {
     const list = await Contact.getContacts();
     res.json(list);
-    res.end();
   } catch (e) {
     console.log(e);
+  } finally {
+    res.end();
   }
 });
 
-contactsRouter.get('/contacts/:contactId', async (req, res) => {
+contactsRouter.get('/getById/:contactId', authMiddleware, async (req, res) => {
   try {
     const searchedContactId = req.params.contactId;
     const searchedContact = await Contact.getContactById(searchedContactId);
@@ -33,23 +35,44 @@ contactsRouter.get('/contacts/:contactId', async (req, res) => {
   }
 });
 
-contactsRouter.post(
-  '/contacts/',
-  validateCreateUserMiddleware,
-  async (req, res) => {
-    try {
-      const { name, email, phone } = req.body;
-      const adddedContact = await Contact.createContact({ name, email, phone });
-      res.status(201).send(adddedContact);
-    } catch (e) {
-      console.log(e);
-    } finally {
-      res.end();
+contactsRouter.get('/current', authMiddleware, async (req, res) => {
+  try {
+    const searchedContact = await req.current;
+    if (!searchedContact) {
+      res.status(401).send({
+        message: 'Not authorized',
+      });
+      return;
     }
-  },
-);
+    res.status(200).send({
+      email: searchedContact.email,
+      subscription: searchedContact.subscription,
+    });
+  } catch (e) {
+    console.log(e);
+  } finally {
+    res.end();
+  }
+});
 
-contactsRouter.delete('/contacts/:contactId', async (req, res) => {
+contactsRouter.post('/', validateCreateUserMiddleware, async (req, res) => {
+  try {
+    const { name, email, phone, token } = req.body;
+    const adddedContact = await Contact.createContact({
+      name,
+      email,
+      phone,
+      token,
+    });
+    res.status(201).send(adddedContact);
+  } catch (e) {
+    console.log(e);
+  } finally {
+    res.end();
+  }
+});
+
+contactsRouter.delete('/:contactId', authMiddleware, async (req, res) => {
   try {
     const searchedContactId = req.params.contactId;
     const removedContact = await Contact.deleteContactById(searchedContactId);
@@ -68,7 +91,8 @@ contactsRouter.delete('/contacts/:contactId', async (req, res) => {
 });
 
 contactsRouter.patch(
-  '/contacts/:contactId',
+  '/:contactId',
+  authMiddleware,
   validateUpdateUserMiddleware,
   async (req, res) => {
     try {
@@ -99,4 +123,4 @@ contactsRouter.patch(
   },
 );
 
-module.exports = contactsRouter;
+module.exports = { contactsRouter };

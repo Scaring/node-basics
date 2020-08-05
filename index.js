@@ -1,8 +1,11 @@
 require('dotenv').config();
 const cors = require('cors');
 const express = require('express');
-const contactsRouter = require('./db/contact.router');
+const { contactsRouter } = require('./contacts/contact.router');
+const { authRouter } = require('./auth/auth.router');
 const mongoose = require('mongoose');
+const emmiter = require('./services/events');
+
 const app = express();
 
 const createServer = async () => {
@@ -13,15 +16,16 @@ const createServer = async () => {
       useFindAndModify: false,
     });
 
-    console.log('Database connection successful');
+    emmiter.emit('dataBastConnection');
 
     app.use(cors());
 
     app.use(express.json());
 
-    app.use('/', contactsRouter);
+    app.use('/contacts', contactsRouter);
+    app.use('/auth', authRouter);
 
-    app.listen(3000, () => console.log('Server is listening on port: 3000'));
+    app.listen(3000, () => emmiter.emit('serverStart'));
   } catch (e) {
     console.log(e);
     process.exit(1);
