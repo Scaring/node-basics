@@ -24,6 +24,7 @@ const createServer = async () => {
 
     app.use('/contacts', contactsRouter);
     app.use('/auth', authRouter);
+    app.use('/images', express.static('public/images'));
 
     app.listen(3000, () => emmiter.emit('serverStart'));
   } catch (e) {

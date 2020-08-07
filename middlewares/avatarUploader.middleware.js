@@ -7,7 +7,9 @@ const avatarUploader = () => {
     },
     filename: (req, filename, cb) => {
       const { _id: id } = req.current;
-      cb(null, `${id}.jpg`);
+      const fileFormat = filename.mimetype.split('/')[1];
+      console.log(filename);
+      cb(null, `${id}.${fileFormat}`);
     },
   });
 

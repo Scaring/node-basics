@@ -7,35 +7,46 @@ const {
 } = require('../contacts/contact.validator');
 const { validateLoginUserMiddleware } = require('./auth.validation');
 const authMiddleware = require('../middlewares/auth.middleware');
+const createRandomAvatar = require('../tmp/generateRandomAvatar');
 
 const authRouter = Router();
 
-authRouter.post('/register', validateCreateUserMiddleware, async (req, res) => {
-  try {
-    const { password } = req.body;
-    const hashPass = await bcrypt.hash(password, Number(process.env.HASH_SALT));
-    const createdContact = await Contact.createContact({
-      ...req.body,
-      token: '',
-      password: hashPass,
-    });
-    const { email, subscription } = createdContact;
-    res.status(201).send({ email, subscription });
-  } catch (e) {
-    switch (e.code) {
-      case 11000:
-        res.status(409).send({
-          message: 'Email in use',
-        });
-        break;
+authRouter.post(
+  '/register',
+  validateCreateUserMiddleware,
+  createRandomAvatar,
+  async (req, res) => {
+    try {
+      console.log(req.avatarUrl);
+      const { password } = req.body;
+      const hashPass = await bcrypt.hash(
+        password,
+        Number(process.env.HASH_SALT),
+      );
+      const createdContact = await Contact.createContact({
+        ...req.body,
+        token: '',
+        password: hashPass,
+        avatarUrl: req.avatarUrl,
+      });
+      const { email, subscription } = createdContact;
+      res.status(201).send({ email, subscription });
+    } catch (e) {
+      switch (e.code) {
+        case 11000:
+          res.status(409).send({
+            message: 'Email in use',
+          });
+          break;
 
-      default:
-        res.status(500).send(e);
+        default:
+          res.status(500).send(e);
+      }
+    } finally {
+      res.end();
     }
-  } finally {
-    res.end();
-  }
-});
+  },
+);
 
 authRouter.post('/login', validateLoginUserMiddleware, async (req, res) => {
   try {
