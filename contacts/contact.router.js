@@ -1,11 +1,16 @@
 const { Router } = require('express');
+const fs = require('fs').promises;
+const path = require('path');
 const Contact = require('./contact.model');
+const imageMove = require('../services/imageMove');
 const authMiddleware = require('../middlewares/auth.middleware');
 const {
   validateCreateUserMiddleware,
   validateUpdateUserMiddleware,
 } = require('./contact.validator');
-const { avatarUploader } = require('../middlewares/avatarUploader.middleware');
+const {
+  avatarUploader,
+} = require('../middlewares/avatarOperations.middleware');
 
 const contactsRouter = Router();
 
@@ -129,7 +134,70 @@ contactsRouter.post(
   authMiddleware,
   avatarUploader,
   async (req, res) => {
-    console.log(req.file);
+    try {
+      const searchedContact = await req.current;
+
+      if (!searchedContact) {
+        res.status(401).send({
+          message: 'Not authorized',
+        });
+        return;
+      }
+
+      const { _id: searchedContactId } = searchedContact;
+
+      const avatarName = req.file.filename;
+      const avatarPath = path.join(__dirname, '../', req.file.path);
+      const destinationAvatarPath = path.join(
+        __dirname,
+        '../public/images/',
+        avatarName,
+      );
+
+      await imageMove(avatarPath, destinationAvatarPath);
+      await Contact.updateContactById(id, {
+        avatarUrl: destinationPath,
+      });
+    } catch (e) {
+      console.log(e);
+    }
+
+    res.end();
+  },
+);
+
+contactsRouter.patch(
+  '/avatars',
+  authMiddleware,
+  avatarUploader,
+  async (req, res) => {
+    try {
+      const searchedContact = await req.current;
+      console.log(req);
+      if (!searchedContact) {
+        res.status(401).send({
+          message: 'Not authorized',
+        });
+        return;
+      }
+
+      const { _id: searchedContactId } = searchedContact;
+      const updateFields = req.body;
+
+      const avatarName = req.file.filename;
+      const avatarPath = path.join(__dirname, '../', req.file.path);
+      const destinationAvatarPath = path.join(
+        __dirname,
+        '../public/images/',
+        avatarName,
+      );
+
+      await imageMove(avatarPath, destinationAvatarPath);
+      await Contact.updateContactById(searchedContactId, ...updateFields);
+    } catch (e) {
+      console.log(e);
+    }
+
     res.end();
   },
 );
