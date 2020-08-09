@@ -154,26 +154,30 @@ contactsRouter.post(
         avatarName,
       );
 
+      await fs.unlink(searchedContact.avatarUrl);
       await imageMove(avatarPath, destinationAvatarPath);
-      await Contact.updateContactById(id, {
-        avatarUrl: destinationPath,
+      await Contact.updateContactById(searchedContactId, {
+        avatarUrl: destinationAvatarPath,
+      });
+      res.status(200).json({
+        avatarURL: destinationAvatarPath,
       });
     } catch (e) {
       console.log(e);
+    } finally {
+      res.end();
     }
-
-    res.end();
   },
 );
 
 contactsRouter.patch(
-  '/avatars',
+  '/update/avatars',
   authMiddleware,
   avatarUploader,
   async (req, res) => {
     try {
       const searchedContact = await req.current;
-      console.log(req);
+
       if (!searchedContact) {
         res.status(401).send({
           message: 'Not authorized',
@@ -184,6 +188,11 @@ contactsRouter.patch(
       const { _id: searchedContactId } = searchedContact;
       const updateFields = req.body;
 
+      if (!req.file) {
+        await Contact.updateContactById(searchedContactId, { ...updateFields });
+        return;
+      }
+
       const avatarName = req.file.filename;
       const avatarPath = path.join(__dirname, '../', req.file.path);
       const destinationAvatarPath = path.join(
@@ -192,13 +201,21 @@ contactsRouter.patch(
         avatarName,
       );
 
+      await fs.unlink(searchedContact.avatarUrl);
       await imageMove(avatarPath, destinationAvatarPath);
-      await Contact.updateContactById(searchedContactId, ...updateFields);
+      await Contact.updateContactById(searchedContactId, {
+        avatarUrl: destinationAvatarPath,
+        ...updateFields,
+      });
+
+      res.status(200).json({
+        avatarURL: destinationAvatarPath,
+      });
     } catch (e) {
       console.log(e);
+    } finally {
+      res.end();
     }
-
-    res.end();
   },
 );
 

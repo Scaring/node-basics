@@ -1,4 +1,5 @@
 const { Router } = require('express');
+const path = require('path');
 const bcrypt = require('bcrypt');
 const Contact = require('../contacts/contact.model');
 const jwt = require('jsonwebtoken');
@@ -7,35 +8,54 @@ const {
 } = require('../contacts/contact.validator');
 const { validateLoginUserMiddleware } = require('./auth.validation');
 const authMiddleware = require('../middlewares/auth.middleware');
-
+const createRandomAvatar = require('../services/generateRandomAvatar');
+const imageMove = require('../services/imageMove');
 const authRouter = Router();
 
-authRouter.post('/register', validateCreateUserMiddleware, async (req, res) => {
-  try {
-    const { password } = req.body;
-    const hashPass = await bcrypt.hash(password, Number(process.env.HASH_SALT));
-    const createdContact = await Contact.createContact({
-      ...req.body,
-      token: '',
-      password: hashPass,
-    });
-    const { email, subscription } = createdContact;
-    res.status(201).send({ email, subscription });
-  } catch (e) {
-    switch (e.code) {
-      case 11000:
-        res.status(409).send({
-          message: 'Email in use',
-        });
-        break;
+authRouter.post(
+  '/register',
+  validateCreateUserMiddleware,
+  createRandomAvatar,
+  async (req, res) => {
+    try {
+      const { password } = req.body;
+      const hashPass = await bcrypt.hash(
+        password,
+        Number(process.env.HASH_SALT),
+      );
 
-      default:
-        res.status(500).send(e);
+      const destinationAvatarPath = path.join(
+        __dirname,
+        '../public/images/',
+        req.avaName,
+      );
+
+      await imageMove(req.avaPath, destinationAvatarPath);
+
+      const createdContact = await Contact.createContact({
+        ...req.body,
+        token: '',
+        password: hashPass,
+        avatarUrl: destinationAvatarPath,
+      });
+      const { email, subscription } = createdContact;
+      res.status(201).send({ email, subscription });
+    } catch (e) {
+      switch (e.code) {
+        case 11000:
+          res.status(409).send({
+            message: 'Email in use',
+          });
+          break;
+
+        default:
+          res.status(500).send(e);
+      }
+    } finally {
+      res.end();
     }
-  } finally {
-    res.end();
-  }
-});
+  },
+);
 
 authRouter.post('/login', validateLoginUserMiddleware, async (req, res) => {
   try {
